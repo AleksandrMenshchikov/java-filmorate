@@ -44,7 +44,7 @@ class UserControllerTest extends BaseControllerTest {
         );
         String s2 = new ObjectMapper().writeValueAsString(data2);
         HttpResponse<String> response2 = getResponse(path, RequestMethod.POST.toString(), s2);
-        Assertions.assertEquals(500, response2.statusCode());
+        Assertions.assertEquals(400, response2.statusCode());
 
         // User create Fail email
         Map<String, ? extends Serializable> data3 = Map.of(
@@ -55,7 +55,7 @@ class UserControllerTest extends BaseControllerTest {
         );
         String s3 = new ObjectMapper().writeValueAsString(data3);
         HttpResponse<String> response3 = getResponse(path, RequestMethod.POST.toString(), s3);
-        Assertions.assertEquals(500, response3.statusCode());
+        Assertions.assertEquals(400, response3.statusCode());
 
         // User create Fail birthday
         Map<String, ? extends Serializable> data4 = Map.of(
@@ -66,7 +66,7 @@ class UserControllerTest extends BaseControllerTest {
         );
         String s4 = new ObjectMapper().writeValueAsString(data4);
         HttpResponse<String> response4 = getResponse(path, RequestMethod.POST.toString(), s4);
-        Assertions.assertEquals(500, response4.statusCode());
+        Assertions.assertEquals(400, response4.statusCode());
     }
 
     @Test
@@ -74,7 +74,7 @@ class UserControllerTest extends BaseControllerTest {
         Map<String, ? extends Serializable> data = Map.of();
         String s = new ObjectMapper().writeValueAsString(data);
         HttpResponse<String> response = getResponse(path, RequestMethod.PUT.toString(), s);
-        Assertions.assertEquals(500, response.statusCode());
+        Assertions.assertEquals(400, response.statusCode());
     }
 
     @Test

@@ -35,18 +35,18 @@ class FilmControllerTest extends BaseControllerTest {
         );
         String s1 = new ObjectMapper().writeValueAsString(data1);
         HttpResponse<String> response1 = getResponse(path, RequestMethod.POST.toString(), s1);
-        Assertions.assertEquals(500, response1.statusCode());
+        Assertions.assertEquals(400, response1.statusCode());
 
         // Film create Fail description
         Map<String, ? extends Serializable> data2 = Map.of(
                 "name", "Film name",
-                "description", "Пятеро друзей ( комик-группа «Шарло»), приезжают в город Бризуль. Здесь они хотят разыскать господина Огюста Куглова, который задолжал им деньги, а именно 20 миллионов. о Куглов, который за время «своего отсутствия», стал кандидатом Коломбани.",
+                "description", "A".repeat(201),
                 "releaseDate", "1900-03-25",
                 "duration", 200
         );
         String s2 = new ObjectMapper().writeValueAsString(data2);
         HttpResponse<String> response2 = getResponse(path, RequestMethod.POST.toString(), s2);
-        Assertions.assertEquals(500, response2.statusCode());
+        Assertions.assertEquals(400, response2.statusCode());
 
         // Film create Fail releaseDate
         Map<String, ? extends Serializable> data3 = Map.of(
@@ -68,7 +68,7 @@ class FilmControllerTest extends BaseControllerTest {
         );
         String s4 = new ObjectMapper().writeValueAsString(data4);
         HttpResponse<String> response4 = getResponse(path, RequestMethod.POST.toString(), s4);
-        Assertions.assertEquals(500, response4.statusCode());
+        Assertions.assertEquals(400, response4.statusCode());
     }
 
     @Test
@@ -76,7 +76,7 @@ class FilmControllerTest extends BaseControllerTest {
         Map<String, ? extends Serializable> data = Map.of();
         String s = new ObjectMapper().writeValueAsString(data);
         HttpResponse<String> response = getResponse(path, RequestMethod.PUT.toString(), s);
-        Assertions.assertEquals(500, response.statusCode());
+        Assertions.assertEquals(400, response.statusCode());
     }
 
     @Test
