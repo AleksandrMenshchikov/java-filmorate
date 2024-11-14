@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -86,11 +85,12 @@ public class FilmService {
         return film;
     }
 
-    public List<Film> getPopularFilms(Integer count) {
+    public Collection<Film> getPopularFilms(Integer count) {
         Collection<Film> allFilms = getAllFilms();
-        List<Film> list = allFilms.stream().sorted((a, b) -> b.getLikes().size() - a.getLikes().size()).toList();
-        return count == null
-                ? list.subList(0, Math.min(list.size(), 10))
-                : list.subList(0, Math.min(list.size(), count));
+        return allFilms
+                .stream()
+                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
+                .limit(count == null ? 10 : count)
+                .toList();
     }
 }

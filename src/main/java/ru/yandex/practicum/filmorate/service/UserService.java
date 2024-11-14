@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -70,17 +69,17 @@ public class UserService {
         return optionalUser.get();
     }
 
-    public List<User> getAllFriends(Long id) {
+    public Collection<User> getAllFriends(Long id) {
         User user = getUserById(id);
         return user.getFriends().stream().map(this::getUserById).toList();
     }
 
-    public List<User> getCommonFriends(Long id, Long otherId) {
+    public Collection<User> getCommonFriends(Long id, Long otherId) {
         User user = getUserById(id);
         User otherUser = getUserById(otherId);
         Set<Long> userFriends = user.getFriends();
         Set<Long> otherUserFriends = otherUser.getFriends();
-        List<Long> list = userFriends.stream().filter(otherUserFriends::contains).toList();
+        Collection<Long> list = userFriends.stream().filter(otherUserFriends::contains).toList();
         return list.stream().map(this::getUserById).toList();
     }
 

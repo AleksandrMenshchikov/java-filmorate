@@ -1,3 +1,8 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
 server:
   error:
     include-message: always
@@ -8,4 +13,6 @@ logging:
     org:
       zalando:
         logbook: TRACE
+  file:
+    name: logging.log
 
