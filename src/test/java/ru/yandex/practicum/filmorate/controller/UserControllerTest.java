@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.constants.RequestMethod;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -25,7 +24,7 @@ class UserControllerTest extends BaseControllerTest {
         );
         String s = new ObjectMapper().writeValueAsString(data);
         HttpResponse<String> response = getResponse(path, RequestMethod.POST.toString(), s);
-        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals(201, response.statusCode());
 
         // Create user with empty name
         Map<String, ? extends Serializable> data1 = Map.of(
@@ -35,7 +34,7 @@ class UserControllerTest extends BaseControllerTest {
         );
         String s1 = new ObjectMapper().writeValueAsString(data1);
         HttpResponse<String> response1 = getResponse(path, RequestMethod.POST.toString(), s1);
-        Assertions.assertEquals(200, response1.statusCode());
+        Assertions.assertEquals(201, response1.statusCode());
 
         // User create Fail login
         Map<String, ? extends Serializable> data2 = Map.of(

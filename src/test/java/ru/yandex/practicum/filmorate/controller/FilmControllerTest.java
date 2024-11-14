@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import ru.yandex.practicum.filmorate.constants.RequestMethod;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,7 +23,7 @@ class FilmControllerTest extends BaseControllerTest {
         );
         String s = new ObjectMapper().writeValueAsString(data);
         HttpResponse<String> response = getResponse(path, RequestMethod.POST.toString(), s);
-        Assertions.assertEquals(200, response.statusCode());
+        Assertions.assertEquals(201, response.statusCode());
 
         // Film create Fail name
         Map<String, ? extends Serializable> data1 = Map.of(
@@ -57,7 +56,7 @@ class FilmControllerTest extends BaseControllerTest {
         );
         String s3 = new ObjectMapper().writeValueAsString(data3);
         HttpResponse<String> response3 = getResponse(path, RequestMethod.POST.toString(), s3);
-        Assertions.assertEquals(500, response3.statusCode());
+        Assertions.assertEquals(400, response3.statusCode());
 
         // Film create Fail duration
         Map<String, ? extends Serializable> data4 = Map.of(

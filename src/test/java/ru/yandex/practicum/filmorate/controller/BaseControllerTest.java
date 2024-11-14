@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import ru.yandex.practicum.filmorate.FilmorateApplication;
-import ru.yandex.practicum.filmorate.constants.RequestMethod;
 
 import java.io.IOException;
 import java.net.URI;
@@ -12,8 +11,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class BaseControllerTest {
+    enum RequestMethod {
+        GET,
+        POST,
+        PUT,
+        DELETE
+    }
+
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() {
         FilmorateApplication.run(new String[]{""});
     }
 

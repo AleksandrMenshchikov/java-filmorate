@@ -1,0 +1,18 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always
+
+logging:
+  level:
+    org:
+      zalando:
+        logbook: TRACE
+  file:
+    name: logging.log
+

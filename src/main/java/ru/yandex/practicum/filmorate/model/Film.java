@@ -5,12 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class Film {
-    private Long id;
+public class Film extends BaseModel {
     @NotNull
     @NotBlank
     private String name;
@@ -23,4 +26,6 @@ public class Film {
     @NotNull
     @Positive
     private Integer duration;
+    // usersIds
+    private Set<Long> likes = new HashSet<>();
 }
