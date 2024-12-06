@@ -2,95 +2,117 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.CreateFilmDTO;
+import ru.yandex.practicum.filmorate.dto.GenreDTO;
+import ru.yandex.practicum.filmorate.dto.UpdateFilmDTO;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
-import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.model.Like;
+import ru.yandex.practicum.filmorate.model.MPA;
+import ru.yandex.practicum.filmorate.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.repository.GenreRepository;
+import ru.yandex.practicum.filmorate.repository.LikeRepository;
+import ru.yandex.practicum.filmorate.repository.MPARepository;
 
 import java.time.LocalDate;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    private final InMemoryFilmStorage inMemoryFilmStorage;
-    private final UserService userService;
+    private final FilmRepository filmRepository;
+    private final LikeRepository likeRepository;
+    private final MPARepository mpaRepository;
+    private final GenreRepository genreRepository;
 
-    public Film createFilm(Film film) {
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+    public Film createFilm(CreateFilmDTO createFilmDTO) {
+        if (createFilmDTO.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new BadRequestException("Дата релиза — не раньше 28 декабря 1895 года");
         }
 
-        Optional<Film> optionalFilm = inMemoryFilmStorage.save(film);
+        Long mpaId = createFilmDTO.getMpa().getId();
+        Optional<MPA> mpa = mpaRepository.findOneById(mpaId);
 
-        if (optionalFilm.isEmpty()) {
-            throw new InternalServerErrorException("Произошла ошибка при создании фильма.");
+        if (mpa.isEmpty()) {
+            throw new BadRequestException(String.format("MPA с id=%s не существует.", mpaId));
         }
 
-        return film;
+        List<GenreDTO> genres = createFilmDTO.getGenres();
+
+        if (genres != null) {
+            for (GenreDTO genreDTO : genres) {
+                Long genreDTOId = genreDTO.getId();
+                genreRepository.findOneById(genreDTOId).orElseThrow(() -> new BadRequestException(String.format("Жанр с id=%s не существует.", genreDTOId)));
+            }
+        }
+
+        return filmRepository.createFilm(createFilmDTO);
     }
 
-    public Film updateFilm(Film film) {
-        Long id = film.getId();
-
-        if (id == null) {
-            throw new BadRequestException("Поле id должно быть в теле запроса.");
-        }
-
-        Film filmStorage = getFilmById(film.getId());
-        film.setLikes(filmStorage.getLikes());
-
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+    public Film updateFilm(UpdateFilmDTO updateFilmDTO) {
+        if (updateFilmDTO.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             throw new BadRequestException("Дата релиза — не раньше 28 декабря 1895 года");
         }
 
-        Optional<Film> optionalFilm = inMemoryFilmStorage.save(film);
+        Long mpaId = updateFilmDTO.getMpa().getId();
 
-        if (optionalFilm.isEmpty()) {
-            throw new InternalServerErrorException("Произошла ошибка при обновлении фильма.");
+        if (mpaId != null) {
+            Optional<MPA> mpa = mpaRepository.findOneById(mpaId);
+
+            if (mpa.isEmpty()) {
+                throw new BadRequestException(String.format("MPA с id=%s не существует.", mpaId));
+            }
         }
 
-        return optionalFilm.get();
+        List<GenreDTO> genres = updateFilmDTO.getGenres();
+
+        if (genres != null) {
+            for (GenreDTO genreDTO : genres) {
+                Long genreDTOId = genreDTO.getId();
+                genreRepository.findOneById(genreDTOId).orElseThrow(() -> new BadRequestException(String.format("Жанр с id=%s не существует.", genreDTOId)));
+            }
+        }
+
+        return filmRepository.updateFilm(updateFilmDTO);
     }
 
-    public Collection<Film> getAllFilms() {
-        return inMemoryFilmStorage.findAll();
+    public List<Film> getAllFilms() {
+        return filmRepository.findAll();
     }
 
     public Film getFilmById(Long id) {
-        Optional<Film> optionalFilm = inMemoryFilmStorage.findOneById(id);
-
-        if (optionalFilm.isEmpty()) {
-            throw new NotFoundException(String.format("Фильм по данному id=%s не найден", id));
-        }
-
-        return optionalFilm.get();
+        return filmRepository.findOneById(id);
     }
 
-    public Film updateFilmLikes(Action action, Long id, Long userId) {
-        Film film = getFilmById(id);
-        User user = userService.getUserById(userId);
-        Set<Long> likes = film.getLikes();
+    public Film addLike(Long filmId, Long userId) {
+        Optional<Like> oneByFilmIdAndUserId = likeRepository.findOneByFilmIdAndUserId(filmId, userId);
 
-        if (action.equals(Action.ADD)) {
-            likes.add(user.getId());
-        } else if (action.equals(Action.REMOVE)) {
-            likes.remove(user.getId());
+        if (oneByFilmIdAndUserId.isPresent()) {
+            return filmRepository.findOneById(filmId);
+        } else {
+            likeRepository.addLike(filmId, userId);
         }
 
-        return film;
+        return filmRepository.findOneById(filmId);
     }
 
-    public Collection<Film> getPopularFilms(Integer count) {
-        Collection<Film> allFilms = getAllFilms();
-        return allFilms
+    public List<Film> getPopularFilms(Integer count) {
+        return getAllFilms()
                 .stream()
                 .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
                 .limit(count == null ? 10 : count)
                 .toList();
+    }
+
+    public Film deleteLike(Long filmId, Long userId) {
+        Optional<Like> like = likeRepository.findOneByFilmIdAndUserId(filmId, userId);
+
+        if (like.isEmpty()) {
+            return filmRepository.findOneById(filmId);
+        } else {
+            likeRepository.delete(like.get().getId());
+            return filmRepository.findOneById(filmId);
+        }
     }
 }

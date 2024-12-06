@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +12,7 @@ import java.time.Instant;
 @RestControllerAdvice
 public class CentralExceptionHandler {
 
+    @Builder
     public record ErrorResponse(
             Instant timestamp,
             Integer status,
@@ -21,13 +23,13 @@ public class CentralExceptionHandler {
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handle(BaseException e, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                Instant.now(),
-                e.getStatus().value(),
-                e.getStatus().getReasonPhrase(),
-                e.getMessage(),
-                request.getRequestURI());
-
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(e.getStatus().value())
+                .error(e.getStatus().getReasonPhrase())
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
         return ResponseEntity.status(e.getStatus().value()).body(errorResponse);
     }
 }
