@@ -12,11 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.filmorate.dto.CreateUserDTO;
+import ru.yandex.practicum.filmorate.dto.UpdateUserDTO;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.Action;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.Collection;
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -26,17 +27,17 @@ public class UserController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@Valid @RequestBody User user) {
-        return userService.createUser(user);
+    public User createUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
+        return userService.createUser(createUserDTO);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user) {
-        return userService.updateUser(user);
+    public User updateUser(@Valid @RequestBody UpdateUserDTO updateUserDTO) {
+        return userService.updateUser(updateUserDTO);
     }
 
     @GetMapping
-    public Collection<User> getAllUsers() {
+    public List<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
@@ -46,22 +47,22 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Collection<User> gelAllFriends(@PathVariable Long id) {
+    public List<User> gelAllFriends(@PathVariable Long id) {
         return userService.getAllFriends(id);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public User updateUserFriends(@PathVariable Long id, @PathVariable Long friendId) {
-        return userService.updateUserFriends(Action.ADD, id, friendId);
+    public User addFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.addFriend(id, friendId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
-    public User deleteUserFriends(@PathVariable Long id, @PathVariable Long friendId) {
-        return userService.updateUserFriends(Action.REMOVE, id, friendId);
+    public User deleteFriend(@PathVariable Long id, @PathVariable Long friendId) {
+        return userService.deleteFriend(id, friendId);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
+    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 }

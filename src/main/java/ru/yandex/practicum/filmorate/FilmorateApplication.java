@@ -6,17 +6,17 @@ import org.springframework.context.ConfigurableApplicationContext;
 
 @SpringBootApplication
 public class FilmorateApplication {
-	private static ConfigurableApplicationContext ctx;
+    private static ConfigurableApplicationContext ctx;
 
-	public static void main(String[] args) {
-		run(args);
-	}
+    public static void main(String[] args) {
+        run(args);
+    }
 
-	public static void run(String[] args) {
-		ctx = SpringApplication.run(FilmorateApplication.class, args);
-	}
+    public static void run(String[] args) {
+        ctx = SpringApplication.run(FilmorateApplication.class, args);
+    }
 
-	public static void close() {
-		ctx.close();
-	}
+    public static void close() {
+        ctx.close();
+    }
 }
