@@ -1,11 +1,15 @@
 package ru.yandex.practicum.filmorate.repository;
 
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dto.GenreDTO;
 import ru.yandex.practicum.filmorate.model.FilmsGenre;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,5 +47,34 @@ public class FilmsGenreRepository extends BaseRepository<FilmsGenre> {
 
     public void update(Long filmId, Long genreId) {
         update(UPDATE_QUERY, filmId, genreId);
+    }
+
+    public void batchInsert(List<GenreDTO> genreDTOList, long filmId) {
+        jdbc.batchUpdate(INSERT_QUERY, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, filmId);
+                ps.setLong(2, genreDTOList.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return genreDTOList.size();
+            }
+        });
+    }
+
+    public void batchDelete(List<FilmsGenre> filmsGenreList) {
+        jdbc.batchUpdate(DELETE_QUERY, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setLong(1, filmsGenreList.get(i).getId());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return filmsGenreList.size();
+            }
+        });
     }
 }

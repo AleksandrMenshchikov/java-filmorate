@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.repository.FriendRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -23,7 +24,7 @@ public class UserService {
 
     public User createUser(CreateUserDTO createUserDTO) {
         userRepository.findOneByEmail(createUserDTO.getEmail()).ifPresent((user) -> {
-            throw new BadRequestException(String.format("Пользователь с данным email=%s уже существует.", user.getEmail()));
+            throw new BadRequestException(String.format("Пользователь с email=%s уже существует.", user.getEmail()));
         });
 
         if (createUserDTO.getName() == null || createUserDTO.getName().isBlank()) {
@@ -43,15 +44,28 @@ public class UserService {
             });
         }
 
-        return userRepository.updateUser(updateUserDTO);
+        User updatedUser = userRepository.updateUser(updateUserDTO);
+        List<Friend> friends = friendRepository.findAllByUserId(updatedUser.getId());
+        user.setFriends(new HashSet<>(friends.stream().map(Friend::getFriendId).toList()));
+        return updatedUser;
     }
 
     public List<User> getAllUsers() {
-        return userRepository.findAll();
+        List<User> users = userRepository.findAll();
+
+        for (User user : users) {
+            List<Long> friends = friendRepository.findAllByUserId(user.getId()).stream().map(Friend::getFriendId).toList();
+            user.setFriends(new HashSet<>(friends));
+        }
+
+        return users;
     }
 
     public User getUserById(Long id) {
-        return userRepository.findOneById(id);
+        User user = userRepository.findOneById(id);
+        List<Long> friends = friendRepository.findAllByUserId(user.getId()).stream().map(Friend::getFriendId).toList();
+        user.setFriends(new HashSet<>(friends));
+        return user;
     }
 
     public List<User> getAllFriends(Long id) {
@@ -67,8 +81,8 @@ public class UserService {
     }
 
     public List<User> getCommonFriends(Long id, Long otherId) {
-        User user = userRepository.findOneById(id);
-        User otherUser = userRepository.findOneById(otherId);
+        User user = getUserById(id);
+        User otherUser = getUserById(otherId);
         Set<Long> userFriends = user.getFriends();
         Set<Long> otherUserFriends = otherUser.getFriends();
         List<Long> list = userFriends.stream().filter(otherUserFriends::contains).toList();
@@ -86,7 +100,8 @@ public class UserService {
         Optional<Friend> friend = friendRepository.findOneByUserIdAndFriendId(userId, friendId);
 
         if (friend.isEmpty()) {
-            return userRepository.addFriend(userId, friendId);
+            friendRepository.addFriend(userId, friendId);
+            return userRepository.findOneById(userId);
         } else {
             return user;
         }
@@ -99,7 +114,8 @@ public class UserService {
 
         User user = userRepository.findOneById(userId);
         userRepository.findOneById(friendId);
-        userRepository.deleteFriend(userId, friendId);
+        Optional<Friend> friend = friendRepository.findOneByUserIdAndFriendId(userId, friendId);
+        friend.ifPresent(value -> friendRepository.delete(value.getId()));
         return user;
     }
 }

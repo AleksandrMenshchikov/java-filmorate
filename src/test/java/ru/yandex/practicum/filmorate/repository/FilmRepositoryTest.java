@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -43,11 +42,10 @@ class FilmRepositoryTest {
     private final int duration = 100;
     private final LocalDate releaseDate = LocalDate.of(1900, 9, 10);
     private final String description = "D";
-    @Getter
     private final List<GenreDTO> genres = List.of(GenreDTO.builder().id(1L).build());
 
-    Film createFilm() {
-        return filmRepository.createFilm(CreateFilmDTO.builder()
+    Long insertFilm() {
+        return filmRepository.insertFilm(CreateFilmDTO.builder()
                 .mpa(mpadto)
                 .duration(duration)
                 .releaseDate(releaseDate)
@@ -58,30 +56,25 @@ class FilmRepositoryTest {
     }
 
     @Test
-    void createFilmTest() {
-        Film film = createFilm();
-        Assertions.assertEquals(name, film.getName());
-        Assertions.assertEquals(duration, film.getDuration());
-        Assertions.assertEquals(releaseDate, film.getReleaseDate());
-        Assertions.assertEquals(description, film.getDescription());
-        Assertions.assertEquals(genres.get(0).getId(), film.getGenres().get(0).getId());
+    void insertFilmTest() {
+        Long id = insertFilm();
+        Assertions.assertTrue(id > 0);
     }
 
     @Test
     void findOneById() {
-        Film f = createFilm();
-        Film film = filmRepository.findOneById(f.getId());
+        Long id = insertFilm();
+        Film film = filmRepository.findOneById(id);
         Assertions.assertEquals(name, film.getName());
         Assertions.assertEquals(duration, film.getDuration());
         Assertions.assertEquals(releaseDate, film.getReleaseDate());
         Assertions.assertEquals(description, film.getDescription());
-        Assertions.assertEquals(genres.get(0).getId(), film.getGenres().get(0).getId());
     }
 
     @Test
     void updateFilm() {
-        Film f = createFilm();
-        Long id = f.getId();
+        Long id = insertFilm();
+        Film f = filmRepository.findOneById(id);
         MPADTO mpadto = MPADTO.builder().id(2L).build();
         String name = f.getName() + "A";
         int duration = f.getDuration() + 1;
@@ -104,12 +97,11 @@ class FilmRepositoryTest {
         Assertions.assertEquals(duration, film.getDuration());
         Assertions.assertEquals(releaseDate, film.getReleaseDate());
         Assertions.assertEquals(description, film.getDescription());
-        Assertions.assertEquals(genres.get(0).getId(), film.getGenres().get(0).getId());
     }
 
     @Test
     void findAll() {
-        createFilm();
+        insertFilm();
         List<Film> films = filmRepository.findAll();
         Assertions.assertEquals(1, films.size());
     }
