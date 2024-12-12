@@ -20,7 +20,10 @@ logging:
   level:
     org:
       zalando:
-        logbook: warn
+        logbook: trace
   file:
     name: logging.log
 
+logbook:
+  minimum-status: 400
+  strategy: body-only-if-status-at-least
