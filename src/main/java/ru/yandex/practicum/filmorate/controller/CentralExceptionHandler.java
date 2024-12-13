@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.yandex.practicum.filmorate.exception.BaseException;
 
@@ -36,36 +37,21 @@ public class CentralExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request) {
-        HttpStatus badRequest = HttpStatus.BAD_REQUEST;
-        return ResponseEntity.status(badRequest.value()).body(ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(badRequest.value())
-                .error(badRequest.getReasonPhrase())
-                .message(e.getMessage())
-                .path(request.getRequestURI())
-                .build());
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> handleNoResourceFoundException(NoResourceFoundException e, HttpServletRequest request) {
-        HttpStatus notFound = HttpStatus.NOT_FOUND;
-        return ResponseEntity.status(notFound.value()).body(ErrorResponse.builder()
-                .timestamp(Instant.now())
-                .status(notFound.value())
-                .error(notFound.getReasonPhrase())
-                .message(e.getMessage())
-                .path(request.getRequestURI())
-                .build());
-    }
-
-    @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleInternalException(Exception e, HttpServletRequest request) {
-        HttpStatus internalServerError = HttpStatus.INTERNAL_SERVER_ERROR;
-        return ResponseEntity.status(internalServerError.value()).body(ErrorResponse.builder()
+        HttpStatus httpStatus;
+
+        if (e instanceof MethodArgumentNotValidException || e instanceof MethodArgumentTypeMismatchException) {
+            httpStatus = HttpStatus.BAD_REQUEST;
+        } else if (e instanceof NoResourceFoundException) {
+            httpStatus = HttpStatus.NOT_FOUND;
+        } else {
+            httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        return ResponseEntity.status(httpStatus.value()).body(ErrorResponse.builder()
                 .timestamp(Instant.now())
-                .status(internalServerError.value())
-                .error(internalServerError.getReasonPhrase())
+                .status(httpStatus.value())
+                .error(httpStatus.getReasonPhrase())
                 .message(e.getMessage())
                 .path(request.getRequestURI())
                 .build());
