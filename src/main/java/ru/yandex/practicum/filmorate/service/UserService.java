@@ -80,12 +80,12 @@ public class UserService {
         return arrayList;
     }
 
-    public List<User> getCommonFriends(Long id, Long otherId) {
-        User user = getUserById(id);
-        User otherUser = getUserById(otherId);
-        Set<Long> userFriends = user.getFriends();
-        Set<Long> otherUserFriends = otherUser.getFriends();
-        List<Long> list = userFriends.stream().filter(otherUserFriends::contains).toList();
+    public List<User> getCommonFriends(Long userId1, Long userId2) {
+        User user1 = getUserById(userId1);
+        User user2 = getUserById(userId2);
+        Set<Long> user1Friends = user1.getFriends();
+        Set<Long> user2Friends = user2.getFriends();
+        List<Long> list = user1Friends.stream().filter(user2Friends::contains).toList();
         return list.stream().map(this::getUserById).toList();
     }
 
