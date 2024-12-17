@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public class MPARepository extends BaseRepository<MPA> {
     private static final String FIND_ONE_BY_ID_QUERY = "SELECT * FROM mpa WHERE id = ?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa ORDER BY id";
 
     public MPARepository(JdbcTemplate jdbc, RowMapper<MPA> mapper) {
         super(jdbc, mapper);

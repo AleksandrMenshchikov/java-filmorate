@@ -10,11 +10,8 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.repository.FriendRepository;
 import ru.yandex.practicum.filmorate.repository.UserRepository;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -44,49 +41,24 @@ public class UserService {
             });
         }
 
-        User updatedUser = userRepository.updateUser(updateUserDTO);
-        List<Friend> friends = friendRepository.findAllByUserId(updatedUser.getId());
-        user.setFriends(new HashSet<>(friends.stream().map(Friend::getFriendId).toList()));
-        return updatedUser;
+        return userRepository.updateUser(updateUserDTO);
     }
 
     public List<User> getAllUsers() {
-        List<User> users = userRepository.findAll();
-
-        for (User user : users) {
-            List<Long> friends = friendRepository.findAllByUserId(user.getId()).stream().map(Friend::getFriendId).toList();
-            user.setFriends(new HashSet<>(friends));
-        }
-
-        return users;
+        return userRepository.findAll();
     }
 
     public User getUserById(Long id) {
-        User user = userRepository.findOneById(id);
-        List<Long> friends = friendRepository.findAllByUserId(user.getId()).stream().map(Friend::getFriendId).toList();
-        user.setFriends(new HashSet<>(friends));
-        return user;
+        return userRepository.findOneById(id);
     }
 
     public List<User> getAllFriends(Long id) {
         userRepository.findOneById(id);
-        List<Long> friends = friendRepository.findAllByUserId(id).stream().map(Friend::getFriendId).toList();
-        List<User> arrayList = new ArrayList<>();
-
-        for (Long friend : friends) {
-            arrayList.add(userRepository.findOneById(friend));
-        }
-
-        return arrayList;
+        return userRepository.getAllFriends(id);
     }
 
     public List<User> getCommonFriends(Long userId1, Long userId2) {
-        User user1 = getUserById(userId1);
-        User user2 = getUserById(userId2);
-        Set<Long> user1Friends = user1.getFriends();
-        Set<Long> user2Friends = user2.getFriends();
-        List<Long> list = user1Friends.stream().filter(user2Friends::contains).toList();
-        return list.stream().map(this::getUserById).toList();
+        return userRepository.getCommonFriends(userId1, userId2);
     }
 
     public User addFriend(Long userId, Long friendId) {

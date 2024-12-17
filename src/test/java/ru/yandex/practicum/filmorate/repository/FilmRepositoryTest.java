@@ -102,7 +102,7 @@ class FilmRepositoryTest {
     @Test
     void findAll() {
         insertFilm();
-        List<Film> films = filmRepository.findAll();
+        List<Film> films = filmRepository.findAll(Integer.MAX_VALUE, false);
         Assertions.assertEquals(1, films.size());
     }
 }

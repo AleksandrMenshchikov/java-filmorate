@@ -7,8 +7,6 @@ import ru.yandex.practicum.filmorate.dto.GenreDTO;
 import ru.yandex.practicum.filmorate.dto.MPADTO;
 import ru.yandex.practicum.filmorate.dto.UpdateFilmDTO;
 import ru.yandex.practicum.filmorate.exception.BadRequestException;
-import ru.yandex.practicum.filmorate.exception.InternalServerErrorException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.FilmsGenre;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -55,25 +53,7 @@ public class FilmService {
     }
 
     public Film getFilmById(Long filmId) {
-        Film film = filmRepository.findOneById(filmId);
-        List<Long> list = likeRepository.findAllByFilmId(film.getId()).stream().map(Like::getUserId).toList();
-        film.setLikes(new HashSet<>(list));
-        Set<FilmsGenre> filmsGenreSet = new HashSet<>(filmsGenreRepository.findAllByFilmId(film.getId()));
-        List<Genre> genres = new ArrayList<>();
-
-        filmsGenreSet.forEach(filmsGenre -> {
-            Long genreId = filmsGenre.getGenreId();
-            Genre genre = genreRepository.findOneById(genreId).orElseThrow(() ->
-                    new NotFoundException(String.format("Жанр с id=%s не найден.", genreId)));
-            genres.add(genre);
-        });
-
-        film.setGenres(genres.stream().sorted((a, b) -> (int) (a.getId() - b.getId())).toList());
-        Long mpaId = film.getMpa().getId();
-        MPA mpa = mpaRepository.findOneById(mpaId).orElseThrow(() ->
-                new NotFoundException(String.format("MPA с id=%s не найден.", mpaId)));
-        film.setMpa(mpa);
-        return film;
+        return filmRepository.findOneById(filmId);
     }
 
     public Film updateFilm(UpdateFilmDTO updateFilmDTO) {
@@ -97,26 +77,7 @@ public class FilmService {
     }
 
     public List<Film> getAllFilms() {
-        List<Film> films = filmRepository.findAll();
-
-        for (Film film : films) {
-            List<Long> list = likeRepository.findAllByFilmId(film.getId()).stream().map(Like::getUserId).toList();
-            film.setLikes(new HashSet<>(list));
-            List<FilmsGenre> filmsGenreList = filmsGenreRepository.findAllByFilmId(film.getId());
-            List<Genre> genres = new ArrayList<>();
-
-            for (FilmsGenre filmsGenre : filmsGenreList) {
-                Long genreId = filmsGenre.getGenreId();
-                Genre genre = genreRepository.findOneById(genreId).orElseThrow(() -> new InternalServerErrorException("Произошла ошибка при получении всех фильмов."));
-                genres.add(genre);
-            }
-
-            film.setGenres(genres);
-            MPA mpa = mpaRepository.findOneById(film.getMpa().getId()).orElseThrow(() -> new InternalServerErrorException("Произошла ошибка при получении всех фильмов."));
-            film.setMpa(mpa);
-        }
-
-        return films;
+        return filmRepository.findAll(Integer.MAX_VALUE, false);
     }
 
     public Film addLike(Long filmId, Long userId) {
@@ -132,11 +93,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularFilms(Integer count) {
-        return getAllFilms()
-                .stream()
-                .sorted((a, b) -> b.getLikes().size() - a.getLikes().size())
-                .limit(count == null ? 10 : count)
-                .toList();
+        return filmRepository.findAll(count, true);
     }
 
     public Film deleteLike(Long filmId, Long userId) {
