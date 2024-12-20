@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.repository.mappers;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.FilmsGenre;
@@ -9,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-@RequiredArgsConstructor
 public class FilmsGenreRowMapper implements RowMapper<FilmsGenre> {
     @Override
     public FilmsGenre mapRow(ResultSet rs, int rowNum) throws SQLException {

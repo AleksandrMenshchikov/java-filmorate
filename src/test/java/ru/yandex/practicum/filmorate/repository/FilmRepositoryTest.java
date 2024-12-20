@@ -7,12 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
-import ru.yandex.practicum.filmorate.dto.CreateFilmDTO;
 import ru.yandex.practicum.filmorate.dto.GenreDTO;
 import ru.yandex.practicum.filmorate.dto.MPADTO;
-import ru.yandex.practicum.filmorate.dto.UpdateFilmDTO;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dto.film.CreateFilmDTO;
+import ru.yandex.practicum.filmorate.dto.film.UpdateFilmDTO;
+import ru.yandex.practicum.filmorate.mapper.FilmMapper;
+import ru.yandex.practicum.filmorate.model.FilmWithLikesGenresMPA;
 import ru.yandex.practicum.filmorate.repository.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.repository.mappers.FilmWithLikesGenresMPARowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.FilmsGenreRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.repository.mappers.LikeRowMapper;
@@ -33,10 +35,13 @@ import java.util.List;
         FilmsGenreRepository.class,
         FilmsGenreRowMapper.class,
         LikeRepository.class,
-        LikeRowMapper.class
+        LikeRowMapper.class,
+        FilmWithLikesGenresMPARepository.class,
+        FilmWithLikesGenresMPARowMapper.class,
 })
 class FilmRepositoryTest {
     private final FilmRepository filmRepository;
+    private final FilmWithLikesGenresMPARepository filmWithLikesGenresMPARepository;
     private final MPADTO mpadto = MPADTO.builder().id(1L).build();
     private final String name = "N";
     private final int duration = 100;
@@ -45,14 +50,15 @@ class FilmRepositoryTest {
     private final List<GenreDTO> genres = List.of(GenreDTO.builder().id(1L).build());
 
     Long insertFilm() {
-        return filmRepository.insertFilm(CreateFilmDTO.builder()
+        CreateFilmDTO createFilmDTO = CreateFilmDTO.builder()
                 .mpa(mpadto)
                 .duration(duration)
                 .releaseDate(releaseDate)
                 .name(name)
                 .description(description)
                 .genres(genres)
-                .build());
+                .build();
+        return filmRepository.createFilm(FilmMapper.mapToFilm(createFilmDTO));
     }
 
     @Test
@@ -64,7 +70,7 @@ class FilmRepositoryTest {
     @Test
     void findOneById() {
         Long id = insertFilm();
-        Film film = filmRepository.findOneById(id);
+        FilmWithLikesGenresMPA film = filmWithLikesGenresMPARepository.findOneById(id);
         Assertions.assertEquals(name, film.getName());
         Assertions.assertEquals(duration, film.getDuration());
         Assertions.assertEquals(releaseDate, film.getReleaseDate());
@@ -74,7 +80,7 @@ class FilmRepositoryTest {
     @Test
     void updateFilm() {
         Long id = insertFilm();
-        Film f = filmRepository.findOneById(id);
+        FilmWithLikesGenresMPA f = filmWithLikesGenresMPARepository.findOneById(id);
         MPADTO mpadto = MPADTO.builder().id(2L).build();
         String name = f.getName() + "A";
         int duration = f.getDuration() + 1;
@@ -92,7 +98,8 @@ class FilmRepositoryTest {
                 .genres(genres)
                 .build();
 
-        Film film = filmRepository.updateFilm(updateFilmDTO);
+        filmRepository.updateFilm(FilmMapper.mapToFilm(updateFilmDTO));
+        FilmWithLikesGenresMPA film = filmWithLikesGenresMPARepository.findOneById(id);
         Assertions.assertEquals(name, film.getName());
         Assertions.assertEquals(duration, film.getDuration());
         Assertions.assertEquals(releaseDate, film.getReleaseDate());
@@ -102,7 +109,7 @@ class FilmRepositoryTest {
     @Test
     void findAll() {
         insertFilm();
-        List<Film> films = filmRepository.findAll(Integer.MAX_VALUE, false);
+        List<FilmWithLikesGenresMPA> films = filmWithLikesGenresMPARepository.findAll(Integer.MAX_VALUE, false);
         Assertions.assertEquals(1, films.size());
     }
 }
